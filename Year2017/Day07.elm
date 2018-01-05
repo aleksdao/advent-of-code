@@ -8,7 +8,7 @@ main =
     Advent.program
         { input = input
         , parse1 = parse
-        , parse2 = parse
+        , parse2 = parse2
         , compute1 = compute1
         , compute2 = compute2
         , tests1 = tests1
@@ -52,6 +52,37 @@ parse input =
                     Maybe.map2 (,) base children
                         |> Maybe.withDefault ( "", [] )
     in
+        List.map (tuplify) lines
+
+
+parse2 : String -> Input
+parse2 input =
+    let
+        lines =
+            input
+                |> String.trim
+                |> String.lines
+                |> List.map (String.split " -> ")
+
+        tuplify line =
+            let
+                base =
+                    List.head line
+                        |> Maybe.map (String.split " ")
+                        |> Maybe.andThen List.head
+
+                children =
+                    List.reverse line
+                        |> List.head
+                        |> Maybe.map (String.split ", ")
+            in
+                if List.length line == 1 then
+                    Maybe.map (\baseString -> ( baseString, [] )) base
+                        |> Maybe.withDefault ( "", [] )
+                else
+                    Maybe.map2 (,) base children
+                        |> Maybe.withDefault ( "", [] )
+    in
         Debug.log "lines" <| List.map (tuplify) lines
 
 
@@ -74,9 +105,6 @@ findBottom input =
                     )
                     combos
                 )
-
-        _ =
-            Debug.log "bases and children" ( possibleBases, children )
     in
         List.filter (\base -> not <| List.member base children) possibleBases
             |> List.head
